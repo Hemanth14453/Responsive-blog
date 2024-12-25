@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Blog</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .admin-panel {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .admin-panel h2 {
+            margin-bottom: 10px;
+        }
+        .admin-panel input,
+        .admin-panel textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .admin-panel button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .admin-panel button:hover {
+            background-color: #45a049;
+        }
+        .edit-panel {
+            display: none; 
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <a href="index.html" class="brand">My Blog</a>
+            <div class="search-bar">
+                <input type="text" placeholder="Search..." oninput="searchPosts(this.value)">
+            </div>
+        </nav>
+    </header>
+
+    <main class="post-list" id="post-list">
+        <article class="post-preview">
+            <img src="charan.jpeg" alt="Post Image" class="img">
+            <h2><a href="post.html?title=Ram Charan&image=charan.jpeg">Ram Charan</a></h2>
+            <p>A versatile Indian actor and producer, Ram Charan has made his mark in Telugu cinema with powerful performances. He is also known for his dynamic dance skills and charismatic screen presence. Click to read more...</p>
+            <p><span style="color: blue;">Click on "Title to comment on Post"</span></p>
+            <a href="https://en.wikipedia.org/wiki/Ram_Charan"><button type="read more">Read More</button></a>
+            <button onclick="confirmAction('edit', this)">Edit</button>
+            <button onclick="confirmAction('delete', this)">Delete</button>
+        </article>
+        <article class="post-preview">
+            <img src="praba.jpg" alt="Post Image" class="img">
+            <h2><a href="post.html?title=Prabhas&image=praba.jpg">Prabhas</a></h2>
+            <p>Renowned for his role in the "Baahubali" series, Prabhas has become a household name in Indian cinema. His dedication to his craft and charming persona have earned him a massive fan following. Click to read more...</p>
+            <p><span style="color: blue;">Click on "Title to comment on Post"</span></p>
+            <a href="https://en.wikipedia.org/wiki/Prabhas"><button type="read more">Read More</button></a>
+            <button onclick="confirmAction('edit', this)">Edit</button>
+            <button onclick="confirmAction('delete', this)">Delete</button>
+        </article>
+        <article class="post-preview">
+            <img src="pawan.jpeg" alt="Post Image" class="img">
+            <h2><a href="post.html?title=Pawan Kalyan&image=pawan.jpeg">Pawan Kalyan</a></h2>
+            <p>Pawan Kalyan, the Deputy Chief Minister of Andhra Pradesh (India), is a prominent actor, politician, and philanthropist. Known for his dynamic leadership and impactful roles in Telugu cinema, he continues to inspire millions. Click to read more...</p>
+            <p><span style="color: blue;">Click on "Title to comment on Post"</span></p>
+            <a href="https://en.wikipedia.org/wiki/Pawan_Kalyan"><button type="read more">Read More</button></a>
+            <button onclick="confirmAction('edit', this)">Edit</button>
+            <button onclick="confirmAction('delete', this)">Delete</button>
+        </article>
+        <article class="post-preview">
+            <img src="allu_arjun.jpeg" alt="Post Image" class="img">
+            <h2><a href="post.html?title=Allu Arjun&image=allu_arjun.jpeg">Allu Arjun</a></h2>
+            <p>Allu Arjun is one of the most popular and stylish actors in Telugu cinema, known for his impeccable dance moves and energetic performances. His versatility has earned him a massive fan following. Click to read more...</p>
+            <p><span style="color: blue;">Click on "Title to comment on Post"</span></p>
+            <a href="https://en.wikipedia.org/wiki/Allu_Arjun"><button type="read more">Read More</button></a>
+            <button onclick="confirmAction('edit', this)">Edit</button>
+            <button onclick="confirmAction('delete', this)">Delete</button>
+        </article>
+        
+    </main>
+    <div class="admin-panel">
+        <h2>A Simple Admin Panel to Add, Edit, and Delete Blog Posts</h2>
+        <input type="text" id="post-title-input" placeholder="Post Title" required>
+        <input type="file" id="post-image-input" accept=".jpg, .jpeg, .png, .gif" required>
+        <textarea id="post-excerpt-input" placeholder="Post Excerpt" rows="4"></textarea>
+        <button onclick="confirmAction('add')">Add Post</button>
+    </div>
+    <div class="edit-panel" id="edit-panel">
+        <h2>Edit Post</h2>
+        <input type="text" id="edit-post-title-input" placeholder="Post Title" required>
+        <input type="file" id="edit-post-image-input" accept=".jpg, .jpeg, .png, .gif">
+        <textarea id="edit-post-excerpt-input" placeholder="Post Excerpt" rows="4"></textarea>
+        <button onclick="updatePost()">Update Post</button>
+        <button onclick="cancelEdit()">Cancel</button>
+    </div>
+
+    <script>
+        const adminPassword = "admin";
+        let currentEditPost = null;
+
+        // Load posts from local storage on page load
+        document.addEventListener('DOMContentLoaded', loadPosts);
+
+        function confirmAction(action, button) {
+            const userPassword = prompt("Please enter the admin password:");
+
+            if (userPassword === adminPassword) {
+                if (action === 'edit') {
+                    editPost(button);
+                } else if (action === 'delete') {
+                    deletePost(button);
+                } else if (action === 'add') {
+                    addPost();
+                }
+            } else {
+                alert("Access denied: Incorrect password.");
+            }
+        }
+
+        function loadPosts() {
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            posts.forEach(post => {
+                displayPost(post.title, post.image, post.excerpt);
+            });
+        }
+
+        function displayPost(title, imageSrc, excerpt) {
+            const postList = document.getElementById('post-list');
+
+            // Create a new article element for the post
+            const newPost = document.createElement('article');
+            newPost.className = 'post-preview';
+            newPost.innerHTML = `
+                <img src="${imageSrc}" alt="Post Image" class="img">
+                <h2><a href="post.html?title=${encodeURIComponent(title)}&image=${imageSrc}">${title}</a></h2>
+                <p>${excerpt}</p>
+                <a href="post.html?title=${encodeURIComponent(title)}&image=${imageSrc}"><button type="read more">Read More</button></a>
+                <button onclick="confirmAction('edit', this)">Edit</button>
+                <button onclick="confirmAction('delete', this)">Delete</button>
+            `;
+
+            // Append the new post to the post list
+            postList.appendChild(newPost);
+        }
+
+        function addPost() {
+            const title = document.getElementById('post-title-input').value;
+            const imageInput = document.getElementById('post-image-input');
+            const excerpt = document.getElementById('post-excerpt-input').value;
+
+            if (title && imageInput.files.length > 0 && excerpt) {
+                const file = imageInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const imgSrc = e.target.result; // Get the file's data URL
+
+                    // Display the new post
+                    displayPost(title, imgSrc, excerpt);
+
+                    // Store post data in local storage
+                    storePost(title, imgSrc, excerpt);
+                };
+
+                reader.readAsDataURL(file); // Read the file as a data URL
+
+                // Reset the form inputs
+                document.getElementById('post-title-input').value = '';
+                document.getElementById('post-excerpt-input').value = '';
+                imageInput.value = ''; // Reset file input
+            } else {
+                alert("Please fill in all fields.");
+            }
+        }
+
+        function storePost(title, imageSrc, excerpt) {
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            posts.push({ title, image: imageSrc, excerpt });
+            localStorage.setItem('posts', JSON.stringify(posts));
+            alert("Post added successfully!");
+        }
+
+        function editPost(button) {
+            const post = button.parentElement;
+            currentEditPost = post;
+
+            const title = post.querySelector('h2 a').textContent;
+            const excerpt = post.querySelector('p').textContent;
+            const imgSrc = post.querySelector('img').src;
+
+            // Populate edit form with existing post data
+            document.getElementById('edit-post-title-input').value = title;
+            document.getElementById('edit-post-excerpt-input').value = excerpt;
+            document.getElementById('edit-post-image-input').value = ''; // Reset file input (upload new image if needed)
+
+            // Show the edit panel
+            document.getElementById('edit-panel').style.display = 'block';
+        }
+
+        function updatePost() {
+            const title = document.getElementById('edit-post-title-input').value;
+            const excerpt = document.getElementById('edit-post-excerpt-input').value;
+            const imageInput = document.getElementById('edit-post-image-input');
+
+            if (title && excerpt) {
+                const imgSrc = currentEditPost.querySelector('img').src; // Keep current image if no new image is uploaded
+
+                if (imageInput.files.length > 0) {
+                    const file = imageInput.files[0];
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        const newImgSrc = e.target.result; // Get the new image's data URL
+
+                        // Update post details
+                        updatePostDetails(title, newImgSrc, excerpt);
+
+                        // Update local storage
+                        updateLocalStorage(title, newImgSrc, excerpt);
+                    };
+
+                    reader.readAsDataURL(file); // Read the file as a data URL
+                } else {
+                    // Update text content only
+                    updatePostDetails(title, imgSrc, excerpt);
+                    updateLocalStorage(title, imgSrc, excerpt);
+                }
+
+                // Reset the edit panel and hide it
+                cancelEdit();
+            } else {
+                alert("Please fill in all fields.");
+            }
+        }
+
+        function updatePostDetails(title, imgSrc, excerpt) {
+            currentEditPost.querySelector('h2 a').textContent = title;
+            currentEditPost.querySelector('h2 a').href = `post.html?title=${encodeURIComponent(title)}&image=${imgSrc}`;
+            currentEditPost.querySelector('img').src = imgSrc;
+            currentEditPost.querySelector('p').textContent = excerpt;
+
+            alert("Post updated successfully!");
+        }
+
+        function updateLocalStorage(title, imgSrc, excerpt) {
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            const index = posts.findIndex(post => post.title === currentEditPost.querySelector('h2 a').textContent);
+            if (index !== -1) {
+                posts[index] = { title, image: imgSrc, excerpt };
+                localStorage.setItem('posts', JSON.stringify(posts));
+            }
+        }
+
+        function deletePost(button) {
+            const post = button.parentElement;
+            const title = post.querySelector('h2 a').textContent;
+
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            const updatedPosts = posts.filter(post => post.title !== title);
+
+            localStorage.setItem('posts', JSON.stringify(updatedPosts));
+            post.remove();
+            alert("Post deleted successfully!");
+        }
+
+        function cancelEdit() {
+            document.getElementById('edit-panel').style.display = 'none'; // Hide edit panel
+            currentEditPost = null; // Clear current edit reference
+        }
+
+        function searchPosts(query) {
+            const posts = document.querySelectorAll('.post-preview');
+            posts.forEach(post => {
+                const title = post.querySelector('h2 a').textContent.toLowerCase();
+                post.style.display = title.includes(query.toLowerCase()) ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Details</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .navbar {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+        }
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            padding: 10px 15px;
+        }
+        .post-details {
+            margin-top: 20px;
+        }
+        .post-details img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        .back-button {
+            margin-top: 20px;
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .comment-section {
+            margin-top: 30px;
+        }
+        .comment-section textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .comment-section button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="navbar">
+            <a href="index.html">My Blog</a>
+        </div>
+    </header>
+
+    <div class="post-details" id="post-details">
+        <h2 id="post-title"></h2>
+        <img id="post-image" src="" alt="Post Image">
+        <p id="post-excerpt"></p>
+        <p id="post-content"></p> <!-- Add more detailed content here -->
+    </div>
+
+    <div class="comment-section">
+        <h3>Leave a Comment:</h3>
+        <textarea id="comment-input" rows="4" placeholder="Write your comment here..."></textarea>
+        <button onclick="postComment()">Post Comment</button>
+    </div>
+
+    <a href="index.html" class="back-button">Back to All Posts</a>
+
+    <script>
+        // Function to get the post details from the URL parameters
+        function getPostDetails() {
+            const params = new URLSearchParams(window.location.search);
+            const title = params.get('title');
+            const imageSrc = params.get('image');
+
+            // Set the post title and image
+            document.getElementById('post-title').textContent = decodeURIComponent(title);
+            document.getElementById('post-image').src = imageSrc;
+
+            // Load additional post content from local storage
+            const posts = JSON.parse(localStorage.getItem('posts')) || [];
+            const post = posts.find(post => post.title === decodeURIComponent(title));
+
+            if (post) {
+                document.getElementById('post-excerpt').textContent = post.excerpt;
+                document.getElementById('post-content').textContent = "This is where you can add more details about the post. You can include further information, context, or any other relevant content about the topic.";
+            }
+        }
+
+        // Function to post a comment
+        function postComment() {
+            const comment = document.getElementById('comment-input').value;
+            if (comment) {
+                alert("Comment posted: " + comment);
+                document.getElementById('comment-input').value = ''; // Clear the input
+            } else {
+                alert("Please write a comment before posting.");
+            }
+        }
+
+        // Load post details when the page loads
+        window.onload = getPostDetails;
+    </script>
+</body>
+</html>
